@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduLearn</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 70px;
+            --navbar-height: 60px;
+            --primary-color: #4e73df;
+            --secondary-color: #f8f9fc;
+        }
+
+        body {
+            overflow-x: hidden;
+            background-color: #f8f9fc;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--primary-color) 0%, #224abe 100%);
+            height: 100vh;
+            transition: all 0.3s;
+            position: fixed;
+            z-index: 999;
+            top: 0;
+            left: 0;
+        }
+
+        .sidebar-collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-collapsed .sidebar-link span {
+            display: none;
+        }
+
+        .sidebar-collapsed .sidebar-header h4 {
+            display: none;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            height: var(--navbar-height);
+        }
+
+        .sidebar-toggle-desktop {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        /* .sidebar-collapsed .sidebar-toggle-desktop {
+            left: calc(var(--sidebar-collapsed-width) - 18px);
+        } */
+
+        .sidebar-close {
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .content-area {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+            min-height: 100vh;
+            padding-top: var(--navbar-height);
+        }
+
+        .content-expanded {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        .navbar {
+            height: var(--navbar-height);
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .nav-fixed {
+            position: fixed;
+            width: calc(100% - var(--sidebar-width));
+            top: 0;
+            right: 0;
+            z-index: 998;
+            transition: all 0.3s;
+        }
+
+        .nav-expanded {
+            width: calc(100% - var(--sidebar-collapsed-width));
+        }
+
+        .sidebar-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-link i {
+            min-width: 30px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+            border-radius: 8px;
+        }
+
+        .card-icon {
+            font-size: 24px;
+            height: 60px;
+            width: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .info-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 100px;
+            height: 100px;
+            opacity: 0.1;
+            border-radius: 50%;
+            background-color: currentColor;
+        }
+
+        .calendar-event {
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .card-inner-body {
+            overflow-y: auto;
+            height: 152px;
+            padding: 0 3px;
+        }
+
+        .card-inner-body::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        .card-inner-body::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 25px;
+        }
+
+        .card-inner-body::-webkit-scrollbar-button {
+            display: none;
+        }
+
+        .card-inner-body::-webkit-scrollbar-track {
+            background-color: #f1f1f1;
+            border-radius: 25px;
+        }
+
+
+        .user-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .user-icon-fallback {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .brand-logo {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                margin-left: calc(-1 * var(--sidebar-width));
+            }
+
+            .content-area {
+                margin-left: 0;
+            }
+
+            .sidebar-shown {
+                margin-left: 0 !important;
+            }
+
+            .sidebar-close {
+                display: block;
+            }
+
+            .nav-fixed {
+                width: 100%;
+            }
+
+            .sidebar-toggle-desktop {
+                display: none;
+            }
+
+            .card-inner-body {
+                overflow-y: auto;
+                height: 160px;
+            }
+        }
+
+        .dropdown-toggle::after {
+            display: none;
+        }
+
+        .chart-container {
+            height: 200px;
+        }
+
+        .progress {
+            height: 10px;
+        }
+
+        /* Border left styling for cards */
+        .border-left-primary {
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .border-left-success {
+            border-left: 4px solid #1cc88a;
+        }
+
+        .border-left-info {
+            border-left: 4px solid #36b9cc;
+        }
+
+        .border-left-warning {
+            border-left: 4px solid #f6c23e;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar d-flex flex-column">
+        <div class="sidebar-header">
+            <!-- Sidebar toggle button for desktop -->
+            <div class="sidebar-toggle-desktop" id="sidebarToggleDesktop">
+                <i class="fas fa-chevron-left" id="toggleIcon"></i>
+            </div>
+            <!-- <h4 class="text-white m-0">LMS Dashboard</h4> -->
+            <span class="sidebar-close" id="sidebarClose">
+                <i class="fas fa-times"></i>
+            </span>
+        </div>
+        <hr class="bg-white opacity-25 mx-3 mt-0">
+        <a href="#" class="sidebar-link active">
+            <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+        </a>
+        <a href="#" class="sidebar-link">
+            <i class="fas fa-file-alt"></i> <span>Papers</span>
+        </a>
+        <a href="#" class="sidebar-link">
+            <i class="fas fa-question-circle"></i> <span>Questions</span>
+        </a>
+        <a href="#" class="sidebar-link">
+            <i class="fas fa-tasks"></i> <span>Quiz</span>
+        </a>
+        <a href="#" class="sidebar-link">
+            <i class="fas fa-clipboard-list"></i> <span>Assignments</span>
+        </a>
+        <a href="#" class="sidebar-link">
+            <i class="fas fa-chart-line"></i> <span>Performance</span>
+        </a>
+        <div class="mt-auto mb-3">
+            <hr class="bg-white opacity-25 mx-3">
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Navbar -->
+    <nav class="navbar nav-fixed">
+        <div class="d-flex justify-content-between align-items-center w-100">
+            <div class="d-flex align-items-center">
+                <button id="sidebarToggle" class="btn d-md-none">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="brand-container ms-2">
+                    <i class="fas fa-graduation-cap fs-4 text-primary"></i>
+                    <span class="ms-2 fw-bold d-none d-sm-inline">EduLearn</span>
+                </div>
+            </div>
+            <div class="dropdown">
+                <div class="d-flex align-items-center dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    <span class="me-2 d-none d-md-inline">John Doe</span>
+                    <!-- User icon fallback when image is not available -->
+                    <div class="user-icon-fallback">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profile</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2"></i> Change Password</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i> Log Out</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div id="content" class="content-area p-4">
+        <div class="container-fluid">
+            <!-- Page Heading -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 text-gray-800">Dashboard</h1>
+                <span class="text-muted">Welcome back, John!</span>
+            </div>
+
+            <!-- Info Cards Row -->
+            <div class="row">
+                <!-- Card 1 -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card info-card border-left-primary h-100 py-2">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-xs fw-bold text-primary text-uppercase mb-1">Assignments</div>
+                                    <div class="h5 mb-0 fw-bold text-gray-800">24</div>
+                                    <div class="small text-muted mt-2">4 pending submissions</div>
+                                </div>
+                                <div class="card-icon text-primary bg-primary bg-opacity-10">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                            </div>
+                            <a href="#" class="btn btn-sm btn-primary mt-3">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card info-card border-left-success h-100 py-2">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-xs fw-bold text-success text-uppercase mb-1">Quiz Score</div>
+                                    <div class="h5 mb-0 fw-bold text-gray-800">85%</div>
+                                    <div class="small text-muted mt-2">12 quizzes completed</div>
+                                </div>
+                                <div class="card-icon text-success bg-success bg-opacity-10">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                            </div>
+                            <a href="#" class="btn btn-sm btn-success mt-3">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card info-card border-left-info h-100 py-2">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-xs fw-bold text-info text-uppercase mb-1">Course Progress</div>
+                                    <div class="h5 mb-0 fw-bold text-gray-800">67%</div>
+                                    <div class="progress mt-2" style="height: 8px;">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: 67%"
+                                            aria-valuenow="67" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                <div class="card-icon text-info bg-info bg-opacity-10">
+                                    <i class="fas fa-graduation-cap"></i>
+                                </div>
+                            </div>
+                            <a href="#" class="btn btn-sm btn-info mt-3">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card info-card border-left-warning h-100 py-2">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-xs fw-bold text-warning text-uppercase mb-1">Questions</div>
+                                    <div class="h5 mb-0 fw-bold text-gray-800">18</div>
+                                    <div class="small text-muted mt-2">3 awaiting answers</div>
+                                </div>
+                                <div class="card-icon text-warning bg-warning bg-opacity-10">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                            </div>
+                            <a href="#" class="btn btn-sm btn-warning mt-3">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row">
+                <!-- Performance Chart -->
+                <div class="col-xl-8 col-lg-7">
+                    <div class="card mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Performance Overview</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar Card -->
+                <div class="col-xl-4 col-lg-5">
+                    <div class="card mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Upcoming Events</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-inner-body">
+                                <div class="calendar-event bg-primary bg-opacity-10 text-primary">
+                                    <div class="fw-bold">Quiz: Data Structures</div>
+                                    <div class="small">Today, 2:00 PM</div>
+                                </div>
+                                <div class="calendar-event bg-danger bg-opacity-10 text-danger">
+                                    <div class="fw-bold">Assignment Deadline: Web Development</div>
+                                    <div class="small">Tomorrow, 11:59 PM</div>
+                                </div>
+                                <div class="calendar-event bg-success bg-opacity-10 text-success">
+                                    <div class="fw-bold">Live Session: Machine Learning</div>
+                                    <div class="small">Mar 15, 10:00 AM</div>
+                                </div>
+                                <div class="calendar-event bg-warning bg-opacity-10 text-warning">
+                                    <div class="fw-bold">Project Presentation</div>
+                                    <div class="small">Mar 18, 3:30 PM</div>
+                                </div>
+                                <div class="calendar-event bg-info bg-opacity-10 text-info">
+                                    <div class="fw-bold">Mid-term Exam</div>
+                                    <div class="small">Mar 20, 9:00 AM</div>
+                                </div>
+                            </div>
+                            <a href="#" class="btn btn-sm btn-primary w-100 mt-3">View Full Calendar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Table -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Activity</th>
+                                            <th>Course</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Score</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Quiz: Python Basics</td>
+                                            <td>Intro to Programming</td>
+                                            <td>Mar 10, 2025</td>
+                                            <td><span class="badge bg-success">Completed</span></td>
+                                            <td>92%</td>
+                                            <td><a href="#" class="btn btn-sm btn-outline-primary">View</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Assignment: Database Design</td>
+                                            <td>Database Management</td>
+                                            <td>Mar 8, 2025</td>
+                                            <td><span class="badge bg-success">Submitted</span></td>
+                                            <td>Pending</td>
+                                            <td><a href="#" class="btn btn-sm btn-outline-primary">View</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Quiz: JavaScript Functions</td>
+                                            <td>Web Development</td>
+                                            <td>Mar 5, 2025</td>
+                                            <td><span class="badge bg-success">Completed</span></td>
+                                            <td>78%</td>
+                                            <td><a href="#" class="btn btn-sm btn-outline-primary">View</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Assignment: Data Visualization</td>
+                                            <td>Data Science</td>
+                                            <td>Mar 1, 2025</td>
+                                            <td><span class="badge bg-danger">Late</span></td>
+                                            <td>85%</td>
+                                            <td><a href="#" class="btn btn-sm btn-outline-primary">View</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Project: E-commerce App</td>
+                                            <td>Full Stack Development</td>
+                                            <td>Feb 28, 2025</td>
+                                            <td><span class="badge bg-warning">In Progress</span></td>
+                                            <td>-</td>
+                                            <td><a href="#" class="btn btn-sm btn-outline-primary">View</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <script>
+        // Sidebar toggle
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebarToggleDesktop = document.getElementById('sidebarToggleDesktop');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarClose = document.getElementById('sidebarClose');
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            const navbar = document.querySelector('.nav-fixed');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            // Toggle sidebar on desktop button click
+            sidebarToggleDesktop.addEventListener('click', function () {
+                sidebar.classList.toggle('sidebar-collapsed');
+                content.classList.toggle('content-expanded');
+                navbar.classList.toggle('nav-expanded');
+
+                // Change the icon direction
+                if (sidebar.classList.contains('sidebar-collapsed')) {
+                    toggleIcon.classList.remove('fa-chevron-left');
+                    toggleIcon.classList.add('fa-chevron-right');
+                } else {
+                    toggleIcon.classList.remove('fa-chevron-right');
+                    toggleIcon.classList.add('fa-chevron-left');
+                }
+            });
+
+            // Toggle sidebar on hamburger button click (mobile)
+            sidebarToggle.addEventListener('click', function () {
+                sidebar.classList.add('sidebar-shown');
+            });
+
+            // Close sidebar on X button click (mobile only)
+            sidebarClose.addEventListener('click', function () {
+                sidebar.classList.remove('sidebar-shown');
+            });
+
+            // Handle responsive behavior
+            function checkWidth() {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('sidebar-collapsed');
+                    content.classList.remove('content-expanded');
+                    navbar.classList.remove('nav-expanded');
+
+                    toggleIcon.classList.remove('fa-chevron-right');
+                    toggleIcon.classList.add('fa-chevron-left');
+                }
+            }
+
+            // Check width on load
+            checkWidth();
+
+            // Check width on resize
+            window.addEventListener('resize', checkWidth);
+
+            // Performance Chart
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            const performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Quiz Scores',
+                        data: [75, 82, 78, 85, 90, 88],
+                        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
+                        pointHoverBorderColor: '#fff',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }, {
+                        label: 'Assignment Scores',
+                        data: [65, 75, 80, 82, 85, 92],
+                        backgroundColor: 'rgba(40, 167, 69, 0.05)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        pointBackgroundColor: 'rgba(40, 167, 69, 1)',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: 'rgba(40, 167, 69, 1)',
+                        pointHoverBorderColor: '#fff',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
